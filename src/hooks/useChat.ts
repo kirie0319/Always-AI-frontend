@@ -8,6 +8,7 @@ export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -72,6 +73,7 @@ export const useChat = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setIsTyping(true);
     setError(null);
 
     try {
@@ -91,6 +93,7 @@ export const useChat = () => {
 
       let assistantMessage = '';
       const decoder = new TextDecoder();
+      let isFirstChunk = true;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -104,6 +107,10 @@ export const useChat = () => {
             try {
               const data = JSON.parse(line.slice(6));
               if (data.text) {
+                if (isFirstChunk) {
+                  setIsTyping(false);
+                  isFirstChunk = false;
+                }
                 assistantMessage += data.text;
                 setMessages(prev => {
                   const newMessages = [...prev];
@@ -131,6 +138,7 @@ export const useChat = () => {
       ]);
     } finally {
       setIsLoading(false);
+      setIsTyping(false);
     }
   };
 
@@ -139,6 +147,7 @@ export const useChat = () => {
     input,
     setInput,
     isLoading,
+    isTyping,
     error,
     messagesEndRef,
     sendMessage,

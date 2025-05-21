@@ -5,7 +5,7 @@
 import { useEffect } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { Message } from '@/components/Message';
-import { LoadingIndicator } from '@/components/LoadingIndicator';
+import { TypingIndicator } from '@/components/TypingIndicator';
 import { logout } from '@/utils/api';
 
 export default function Chat() {
@@ -19,6 +19,7 @@ export default function Chat() {
     sendMessage,
     scrollToBottom,
     clearChat,
+    isTyping,
   } = useChat();
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function Chat() {
           {messages?.map((message, index) => (
             <Message key={index} message={message} />
           ))}
-          {isLoading && <LoadingIndicator />}
+          {isTyping && <TypingIndicator />}
           {error && (
             <div className="text-red-400 text-sm text-center">{error}</div>
           )}
