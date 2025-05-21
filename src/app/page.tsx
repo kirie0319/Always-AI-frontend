@@ -1,103 +1,58 @@
-import Image from "next/image";
+"use client";
+// src/app/page.tsx
+// the main page
+
+import Chat from './components/Chat';
+import Sidebar from './components/Sidebar';
+import { useState } from 'react';
+
+function Projects() {
+  return (
+    <div className="flex flex-col items-center w-full h-full bg-[#f5faff] text-[#2563eb] py-12">
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-[#2563eb]">Projects</h1>
+          <button className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold px-5 py-2 rounded-lg shadow transition-colors">+ New project</button>
+        </div>
+        <input
+          type="text"
+          placeholder="Search projects..."
+          className="w-full mb-6 px-4 py-3 rounded-lg border border-[#2563eb] bg-transparent text-[#2563eb] placeholder:text-[#7ca0e4] focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
+        />
+        <div className="flex justify-end mb-6">
+          <button className="flex items-center bg-[#eaf1fb] text-[#2563eb] px-4 py-2 rounded-lg border border-[#2563eb] hover:bg-[#2563eb] hover:text-white transition-colors">
+            Sort by <span className="ml-2 font-semibold">Activity</span>
+          </button>
+        </div>
+        <div className="flex gap-6 mb-6">
+          <a href="/finance" className="flex-1 border border-[#2563eb] rounded-xl p-5 bg-white hover:bg-[#2563eb] hover:text-white transition-colors cursor-pointer block">
+            <div className="font-bold text-lg mb-2 text-[#2563eb] hover:text-white transition-colors">Financial Suppoter AI</div>
+            <div className="text-sm mb-4 text-[#7ca0e4] hover:text-white transition-colors">金融向けのファイプロ</div>
+            <div className="text-xs text-[#7ca0e4] hover:text-white transition-colors">Updated 6 months ago</div>
+          </a>
+          <div className="flex-1 border border-[#2563eb] rounded-xl p-5 bg-white hover:bg-[#2563eb] hover:text-white transition-colors">
+            <div className="font-bold text-lg mb-2 text-[#2563eb] hover:text-white transition-colors">Mobility Support AI</div>
+            <div className="text-sm mb-4 text-[#7ca0e4] hover:text-white transition-colors">An example project that also doubles as a how-to guide for using Claude. Chat with it to learn more about how to get the most out of chatting with Claude!</div>
+            <div className="text-xs text-[#7ca0e4] hover:text-white transition-colors">Updated 10 months ago</div>
+          </div>
+        </div>
+        <button className="w-full py-3 rounded-lg border border-[#2563eb] text-[#2563eb] font-semibold hover:bg-[#2563eb] hover:text-white transition-colors">View all</button>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
+  const [selectedMenu, setSelectedMenu] = useState('chats');
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="h-screen flex flex-row bg-[#181818]">
+      <Sidebar selectedMenu={selectedMenu} setSelectedMenu={setSelectedMenu} />
+      <main className="flex-1 flex flex-col">
+        {/* <Navigation /> ← Claude風には不要なので一旦非表示 */}
+        <div className="w-full flex-1 flex flex-col">
+          {selectedMenu === 'chats' ? <Chat /> : <Projects />}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
