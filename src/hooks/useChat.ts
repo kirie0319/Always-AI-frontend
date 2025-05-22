@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchWithAuth } from '@/utils/api';
-import { Message, ChatResponse, ChatHistory } from '@/types/chat';
+import { Message } from '@/types/chat';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated } from '@/utils/auth';
 

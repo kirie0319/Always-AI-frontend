@@ -6,7 +6,6 @@ import { useEffect } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { Message } from '@/components/Message';
 import { TypingIndicator } from '@/components/TypingIndicator';
-import { logout } from '@/utils/api';
 
 export default function Chat() {
   const {
@@ -29,14 +28,6 @@ export default function Chat() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await sendMessage(input);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
   };
 
   return (
