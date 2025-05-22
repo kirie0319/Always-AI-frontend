@@ -30,8 +30,12 @@ export const useChat = () => {
     try {
       const response = await fetchWithAuth('/conversation_history');
       if (response.ok) {
-        const data: ChatHistory = await response.json();
-        setMessages(data?.messages || []);
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setMessages(data);
+        } else {
+          setMessages(data?.messages || []);
+        }
       } else {
         throw new Error('Failed to load chat history');
       }

@@ -40,14 +40,22 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#f5faff] shadow-xl border border-[#b6d0f7] overflow-hidden">
-      <div className="flex justify-between items-center p-4">
+    <div className="flex flex-col h-full min-h-screen bg-[#f5faff] shadow-xl border border-[#b6d0f7] overflow-hidden">
+      <div className="flex justify-between items-center p-4 relative shrink-0">
         <h1 className="text-xl font-semibold text-[#2563eb] tracking-wide">Always AI Chat</h1>
         <div className="flex space-x-3">
         </div>
+        <button
+          onClick={clearChat}
+          className="absolute top-2 right-4 w-12 h-12 bg-[#2563eb] text-white rounded-full flex items-center justify-center shadow-lg hover:bg-[#1d4ed8] transition-colors text-xl z-10"
+          disabled={isLoading || messages.length === 0}
+          title="履歴クリア"
+        >
+          🗑️
+        </button>
       </div>
       <div className="flex-1 flex justify-center bg-[#f5faff] overflow-y-auto">
-        <div className="w-3/5 p-6 space-y-4">
+        <div className="w-full max-w-3xl p-6 space-y-4">
           {messages?.map((message, index) => (
             <Message key={index} message={message} />
           ))}
@@ -58,7 +66,7 @@ export default function Chat() {
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <form onSubmit={handleSubmit} className="p-4 min-h-32 flex items-center">
+      <form onSubmit={handleSubmit} className="p-4 min-h-32 flex items-center shrink-0">
         <div className="flex justify-center w-full">
           <div className="w-3/5 relative min-h-24 flex items-center border border-[#b6d0f7] rounded-2xl bg-white shadow-md">
             <input
@@ -79,15 +87,6 @@ export default function Chat() {
           </div>
         </div>
       </form>
-      {/* 履歴クリアボタンを右下に固定 */}
-      <button
-        onClick={clearChat}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#2563eb] text-white rounded-full flex items-center justify-center shadow-lg hover:bg-[#1d4ed8] transition-colors text-2xl"
-        disabled={isLoading || messages.length === 0}
-        title="履歴クリア"
-      >
-        🗑️
-      </button>
     </div>
   );
 } 

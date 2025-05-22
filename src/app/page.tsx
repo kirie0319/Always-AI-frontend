@@ -5,6 +5,7 @@
 import Chat from './components/Chat';
 import Sidebar from './components/Sidebar';
 import { useState } from 'react';
+import Link from 'next/link';
 
 function Projects() {
   return (
@@ -25,11 +26,11 @@ function Projects() {
           </button>
         </div>
         <div className="flex gap-6 mb-6">
-          <a href="/finance" className="flex-1 border border-[#2563eb] rounded-xl p-5 bg-white hover:bg-[#2563eb] hover:text-white transition-colors cursor-pointer block">
+          <Link href="/finance" className="flex-1 border border-[#2563eb] rounded-xl p-5 bg-white hover:bg-[#2563eb] hover:text-white transition-colors cursor-pointer block">
             <div className="font-bold text-lg mb-2 text-[#2563eb] hover:text-white transition-colors">Financial Suppoter AI</div>
             <div className="text-sm mb-4 text-[#7ca0e4] hover:text-white transition-colors">金融向けのファイプロ</div>
             <div className="text-xs text-[#7ca0e4] hover:text-white transition-colors">Updated 6 months ago</div>
-          </a>
+          </Link>
           <div className="flex-1 border border-[#2563eb] rounded-xl p-5 bg-white hover:bg-[#2563eb] hover:text-white transition-colors">
             <div className="font-bold text-lg mb-2 text-[#2563eb] hover:text-white transition-colors">Mobility Support AI</div>
             <div className="text-sm mb-4 text-[#7ca0e4] hover:text-white transition-colors">An example project that also doubles as a how-to guide for using Claude. Chat with it to learn more about how to get the most out of chatting with Claude!</div>
@@ -47,9 +48,9 @@ export default function Home() {
   return (
     <div className="h-screen flex flex-row bg-[#181818]">
       <Sidebar selectedMenu={selectedMenu} setSelectedMenu={setSelectedMenu} />
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col h-full">
         {/* <Navigation /> ← Claude風には不要なので一旦非表示 */}
-        <div className="w-full flex-1 flex flex-col">
+        <div className="w-full flex-1 flex flex-col h-full">
           {selectedMenu === 'chats' ? <Chat /> : <Projects />}
         </div>
       </main>
