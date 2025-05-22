@@ -22,7 +22,7 @@ export const useAuth = () => {
   const [error, setError] = useState<AuthError | null>(null);
   const router = useRouter();
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://finance-advisory-project-production.up.railway.app';
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -32,6 +32,7 @@ export const useAuth = () => {
   }, [router]);
 
   const login = async (formData: LoginFormData) => {
+    console.log('API_BASE_URL:', API_BASE_URL);
     console.log('Login form submitted');
     setError(null);
     setIsLoading(true);
