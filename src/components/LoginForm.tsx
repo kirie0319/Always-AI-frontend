@@ -7,8 +7,9 @@ export const LoginForm = () => {
   const [password, setPassword] = useState('');
   const { isLoading, error, login } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
     await login({ username, password });
   };
 
