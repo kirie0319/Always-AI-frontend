@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     try {
       // APIエンドポイントにトークンをテスト送信
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/conversation_history`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/conversation_history`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
