@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRefresh, faDownload, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { StrategyData, CurrentAnalysis, Strategy } from '@/types/finance';
 import { getStrategyData } from '@/utils/api';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface StrategyDisplayProps {
   strategy?: StrategyData;
@@ -26,7 +26,7 @@ const CHART_COLORS = [
 ];
 
 // ポートフォリオデータを円グラフ用データに変換
-function convertPortfolioToChartData(portfolio: any[]) {
+function convertPortfolioToChartData(portfolio: Array<{ category: string; amount: string }>) {
   if (!portfolio || portfolio.length === 0) return [];
   
   return portfolio.map((item, index) => {
@@ -44,7 +44,19 @@ function convertPortfolioToChartData(portfolio: any[]) {
 }
 
 // カスタムトゥールチップ
-function CustomTooltip({ active, payload }: any) {
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    payload: {
+      name: string;
+      formattedValue: string;
+      totalValue: number;
+    };
+  }>;
+}
+
+function CustomTooltip({ active, payload }: TooltipProps) {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (
@@ -52,7 +64,7 @@ function CustomTooltip({ active, payload }: any) {
         <p className="font-semibold text-gray-800">{data.payload.name}</p>
         <p className="text-blue-600">{data.payload.formattedValue}</p>
         <p className="text-gray-600 text-sm">
-          {((data.value / payload[0].payload.totalValue) * 100).toFixed(1)}%
+          {((data.value / data.payload.totalValue) * 100).toFixed(1)}%
         </p>
       </div>
     );
@@ -234,7 +246,7 @@ function CurrentAnalysisComponent({ analysis }: { analysis: CurrentAnalysis }) {
 }
 
 // ポートフォリオ円グラフコンポーネント
-function PortfolioChartComponent({ portfolio }: { portfolio: any[] }) {
+function PortfolioChartComponent({ portfolio }: { portfolio: Array<{ category: string; amount: string }> }) {
   const chartData = convertPortfolioToChartData(portfolio);
   
   if (!chartData || chartData.length === 0) {

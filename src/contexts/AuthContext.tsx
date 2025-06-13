@@ -162,7 +162,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // デバッグ用: 開発環境でのみ有効
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      (window as any).clearAuth = () => {
+      (window as typeof window & { clearAuth?: () => void }).clearAuth = () => {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userInfo');
         setUser(null);

@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faChartLine, 
-  faArrowLeft,
+  faChartLine,
   faDownload,
-  faSpinner,
-  faRefresh
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import { StrategyData, LifeplanData } from '@/types/finance';
 import StrategyDisplay from '@/components/StrategyDisplay';
@@ -99,7 +96,6 @@ export default function FinanceProject() {
   const [promptOptions, setPromptOptions] = useState<PromptOption[]>([]);
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
   const [lifeplanData, setLifeplanData] = useState<LifeplanData | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   // プロンプト一覧を取得する関数
   const loadPromptOptions = async () => {
@@ -107,7 +103,7 @@ export default function FinanceProject() {
     try {
       const response = await apiRequest('/api/prompts');
       if (response.success && response.prompts) {
-        setPromptOptions(response.prompts.map((prompt: any) => ({
+        setPromptOptions(response.prompts.map((prompt: { id: number; title: string; description?: string; content: string }) => ({
           id: prompt.id.toString(),
           title: prompt.title,
           description: prompt.description || 'プロンプトの説明がありません',
@@ -252,7 +248,7 @@ export default function FinanceProject() {
           // Step 2: 財務状況
           savings: (crmData.financialInfo?.savings || 0) * 10000, // 万円→円に変換
           hasInvestments: crmData.financialInfo?.hasInvestments || prev.hasInvestments,
-          investments: crmData.financialInfo?.investments?.map((inv: any) => ({
+          investments: crmData.financialInfo?.investments?.map((inv: Investment) => ({
             type: inv.type,
             amount: inv.amount * 10000, // 万円→円に変換
             name: inv.name,
@@ -263,7 +259,7 @@ export default function FinanceProject() {
           hasCar: crmData.financialInfo?.hasCar || prev.hasCar,
           hasHome: crmData.financialInfo?.hasHome || prev.hasHome,
           monthlyExpenses: (crmData.financialInfo?.livingExpenses || 0) * 10000, // 万円→円に変換
-          loans: crmData.financialInfo?.loans?.map((loan: any) => ({
+          loans: crmData.financialInfo?.loans?.map((loan: Loan) => ({
             type: loan.type,
             balance: loan.balance * 10000, // 万円→円に変換
             remainingMonths: loan.remainingMonths
@@ -300,7 +296,7 @@ export default function FinanceProject() {
   };
 
   // フォームデータ更新
-  const updateFormData = (field: keyof FinancialData, value: any) => {
+  const updateFormData = (field: keyof FinancialData, value: unknown) => {
     setFinancialData(prev => ({
       ...prev,
       [field]: value
@@ -347,22 +343,6 @@ export default function FinanceProject() {
     }
   };
 
-  // 戦略データ更新
-  const refreshStrategy = async () => {
-    setIsLoading(true);
-    try {
-      const response = await apiRequest('/financial/get-strategy');
-      if (response.success && response.strategy_data) {
-        setStrategy(response.strategy_data);
-      }
-    } catch (error) {
-      console.error('戦略データ取得エラー:', error);
-      alert('戦略データの取得に失敗しました。');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // 新しい関数: ライフプランデータを生成
   const generateLifeplan = async () => {
     if (!financialData.age) {
@@ -370,7 +350,7 @@ export default function FinanceProject() {
       return;
     }
 
-    setIsGenerating(true);
+    setIsLoading(true);
     try {
       // フロントエンドのデータ構造をバックエンドの期待する形式に変換
       const transformedData = {
@@ -443,29 +423,8 @@ export default function FinanceProject() {
       console.error('ライフプランシミュレーション生成エラー:', error);
       alert('ライフプランシミュレーションの生成中にエラーが発生しました: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
-      setIsGenerating(false);
+      setIsLoading(false);
     }
-  };
-
-  // マークダウン形式のテキストをHTMLに変換する関数
-  const renderMarkdownContent = (content: string) => {
-    if (!content) return null;
-    
-    return (
-      <div className="prose max-w-none">
-        <div 
-          dangerouslySetInnerHTML={{ 
-            __html: content
-              .replace(/### (.*?)\n/g, '<h3 class="text-xl font-bold text-blue-800 mb-3 mt-6">$1</h3>')
-              .replace(/#### (.*?)\n/g, '<h4 class="text-lg font-semibold text-blue-700 mb-2 mt-4">$1</h4>')
-              .replace(/\* (.*?)\n/g, '<li class="mb-1">$1</li>')
-              .replace(/(<li.*?>[\s\S]*?<\/li>)/g, '<ul class="list-disc pl-6 mb-4">$1</ul>')
-              .replace(/\n\n/g, '</p><p class="mb-4">')
-              .replace(/^(.+)$/gm, '<p class="mb-4">$1</p>')
-          }} 
-        />
-      </div>
-    );
   };
 
   return (

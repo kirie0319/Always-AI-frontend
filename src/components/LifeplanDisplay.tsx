@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRefresh, faDownload, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { LifeplanData } from '@/types/finance';
@@ -29,9 +29,14 @@ ChartJS.register(
   Legend
 );
 
+interface FinancialData {
+  age?: number;
+  // 他の必要なプロパティを追加
+}
+
 interface LifeplanDisplayProps {
   lifeplan?: LifeplanData;
-  financialData?: any;
+  financialData?: FinancialData;
   onGenerateLifeplan?: () => Promise<void>;
 }
 
