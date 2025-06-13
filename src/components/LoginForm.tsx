@@ -1,16 +1,73 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const LoginForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { isLoading, error, login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    e.stopPropagation();
-    await login({ username, password });
+    setIsLoading(true);
+    setError('');
+
+    try {
+      if (!username || !password) {
+        setError('ユーザー名とパスワードを入力してください。');
+        return;
+      }
+
+      // バックエンドのログインAPIを呼び出し
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('password', password);
+
+      const response = await fetch('http://localhost:5001/token', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError('ユーザー名またはパスワードが正しくありません。');
+        } else {
+          setError('ログインに失敗しました。サーバーエラーが発生しました。');
+        }
+        return;
+      }
+
+      const tokenData = await response.json();
+      
+      console.log('Login response:', tokenData);
+      console.log('Access token:', tokenData.access_token);
+      
+      // ユーザー情報をトークンから取得するか、別途APIで取得
+      const userInfo = {
+        id: '1', // 実際にはトークンからユーザーIDを取得
+        username: username,
+        email: username.includes('@') ? username : `${username}@example.com`
+      };
+      
+      login(tokenData.access_token, userInfo);
+      
+      // トークンが正しく保存されたかを確認
+      setTimeout(() => {
+        const savedToken = localStorage.getItem('authToken');
+        console.log('Saved token:', savedToken);
+      }, 100);
+      
+      router.push('/');
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('ログインに失敗しました。ネットワークエラーが発生しました。');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -20,6 +77,13 @@ export const LoginForm = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             アカウントにログイン
           </h2>
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>ログイン方法:</strong><br/>
+              1. 既存のアカウントでログイン<br/>
+              2. または下記の「アカウント作成」から新規登録
+            </p>
+          </div>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
@@ -56,7 +120,7 @@ export const LoginForm = () => {
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm text-center">{error.message}</div>
+            <div className="text-red-500 text-sm text-center">{error}</div>
           )}
 
           <div>

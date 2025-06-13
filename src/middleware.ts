@@ -2,28 +2,18 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  console.log('Middleware executing for path:', request.nextUrl.pathname);
+  // 静的ファイルやAPIルートはスキップ
+  const { pathname } = request.nextUrl;
   
-  const token = request.cookies.get('access_token');
-  console.log('Token in cookies:', token ? 'exists' : 'not found');
-  
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
-                    request.nextUrl.pathname.startsWith('/register');
-  console.log('Is auth page:', isAuthPage);
-
-  // If trying to access auth pages while logged in, redirect to home
-  if (isAuthPage && token) {
-    console.log('Redirecting from auth page to home');
-    return NextResponse.redirect(new URL('/', request.url));
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('.') // 静的ファイル
+  ) {
+    return NextResponse.next();
   }
 
-  // If trying to access protected pages while logged out, redirect to login
-  if (!isAuthPage && !token) {
-    console.log('Redirecting to login page');
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  console.log('Middleware allowing request to proceed');
+  // React側での認証管理に委ねるため、ミドルウェアでは最小限の処理のみ
   return NextResponse.next();
 }
 

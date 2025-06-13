@@ -1,10 +1,8 @@
 "use client";
-// src/app/page.tsx
-// the main page
 
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Chat from './components/Chat';
-import Sidebar from './components/Sidebar';
-import { useState } from 'react';
 import Link from 'next/link';
 
 function Projects() {
@@ -44,16 +42,22 @@ function Projects() {
 }
 
 export default function Home() {
-  const [selectedMenu, setSelectedMenu] = useState('chats');
+  const [activeTab, setActiveTab] = useState('chats');
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    // URLパラメータからタブを設定
+    const tab = searchParams.get('tab');
+    if (tab === 'projects') {
+      setActiveTab('projects');
+    } else {
+      setActiveTab('chats');
+    }
+  }, [searchParams]);
+
   return (
-    <div className="h-screen flex flex-row bg-[#181818]">
-      <Sidebar selectedMenu={selectedMenu} setSelectedMenu={setSelectedMenu} />
-      <main className="flex-1 flex flex-col h-full">
-        {/* <Navigation /> ← Claude風には不要なので一旦非表示 */}
-        <div className="w-full flex-1 flex flex-col h-full">
-          {selectedMenu === 'chats' ? <Chat /> : <Projects />}
-        </div>
-      </main>
+    <div className="w-full h-full flex flex-col">
+      {activeTab === 'chats' ? <Chat /> : <Projects />}
     </div>
   );
 }

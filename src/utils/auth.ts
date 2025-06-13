@@ -18,8 +18,8 @@ export const removeAccessToken = (): void => {
   document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 };
 
-// 認証状態のチェック
-export const isAuthenticated = (): boolean => {
+// 認証状態のチェック（Cookie版）
+export const isAuthenticatedByCookie = (): boolean => {
   return getAccessToken() !== null;
 };
 
@@ -60,4 +60,65 @@ export const setUserName = (username: string): void => {
 // ユーザー名の削除
 export const removeUserName = (): void => {
   document.cookie = 'username=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+};
+
+// 認証トークンの管理
+export const getAuthToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('authToken');
+  }
+  return null;
+};
+
+export const setAuthToken = (token: string): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('authToken', token);
+  }
+};
+
+export const removeAuthToken = (): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('authToken');
+  }
+};
+
+// 認証状態の確認
+export const isAuthenticated = (): boolean => {
+  try {
+    if (typeof window === 'undefined') return false;
+    const token = getAuthToken();
+    return token !== null && token !== '';
+  } catch (error) {
+    console.error('認証状態の確認に失敗:', error);
+    return false;
+  }
+};
+
+// ログアウト処理
+export const logout = (): void => {
+  removeAuthToken();
+  if (typeof window !== 'undefined') {
+    window.location.href = '/login';
+  }
+};
+
+// ユーザー情報の管理
+export const getUserInfo = () => {
+  if (typeof window !== 'undefined') {
+    const userInfo = localStorage.getItem('userInfo');
+    return userInfo ? JSON.parse(userInfo) : null;
+  }
+  return null;
+};
+
+export const setUserInfo = (userInfo: { id: string; username: string; email?: string }) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+  }
+};
+
+export const removeUserInfo = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('userInfo');
+  }
 }; 

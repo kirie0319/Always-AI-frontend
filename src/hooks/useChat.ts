@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { fetchWithAuth } from '@/utils/api';
-import { Message } from '@/types/chat';
-import { useRouter } from 'next/navigation';
-import { isAuthenticated } from '@/utils/auth';
+import { getChatHistory, sendChatMessage, clearChatHistory } from '@/utils/api';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp?: string;
+}
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -11,16 +14,10 @@ export const useChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      setError('ログインが必要です');
-      router.push('/login');
-      return;
-    }
     loadChatHistory();
-  }, [router]);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -28,17 +25,14 @@ export const useChat = () => {
 
   const loadChatHistory = async () => {
     try {
-      const response = await fetchWithAuth('/conversation_history');
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setMessages(data);
-        } else {
-          setMessages(data?.messages || []);
-        }
-      } else {
-        throw new Error('Failed to load chat history');
-      }
+      const data = await getChatHistory();
+      // 型を適切にキャストして互換性を保つ
+      const typedMessages: Message[] = data.map(item => ({
+        role: (item.role as 'user' | 'assistant'),
+        content: item.content,
+        timestamp: item.timestamp
+      }));
+      setMessages(typedMessages);
     } catch (error) {
       console.error('Failed to load chat history:', error);
       setError('チャット履歴の読み込みに失敗しました');
@@ -48,16 +42,9 @@ export const useChat = () => {
 
   const clearChat = async () => {
     try {
-      const response = await fetchWithAuth('/clear', {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        setMessages([]);
-        setError(null);
-      } else {
-        throw new Error('Failed to clear chat history');
-      }
+      await clearChatHistory();
+      setMessages([]);
+      setError(null);
     } catch (error) {
       console.error('Failed to clear chat history:', error);
       setError('チャット履歴のクリアに失敗しました');
@@ -67,12 +54,6 @@ export const useChat = () => {
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
 
-    if (!isAuthenticated()) {
-      setError('ログインが必要です');
-      router.push('/login');
-      return;
-    }
-
     const userMessage: Message = { role: 'user', content: content.trim() };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
@@ -81,10 +62,7 @@ export const useChat = () => {
     setError(null);
 
     try {
-      const response = await fetchWithAuth('/message_chat', {
-        method: 'POST',
-        body: JSON.stringify({ message: userMessage.content }),
-      });
+      const response = await sendChatMessage(userMessage.content);
 
       if (!response.ok) {
         throw new Error('Failed to get response');

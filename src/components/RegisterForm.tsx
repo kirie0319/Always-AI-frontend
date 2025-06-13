@@ -1,16 +1,64 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 export const RegisterForm = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { isLoading, error, register } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await register({ username, email, password });
+    setIsLoading(true);
+    setError('');
+
+    try {
+      if (!username || !email || !password) {
+        setError('すべての項目を入力してください。');
+        return;
+      }
+
+      // バックエンドの登録APIを呼び出し
+      const formData = new FormData();
+      formData.append('username', username);
+      formData.append('email', email);
+      formData.append('password', password);
+
+      const response = await fetch('http://localhost:5001/register', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (response.status === 400) {
+          if (errorText.includes('メールアドレス')) {
+            setError('このメールアドレスはすでに登録されています。');
+          } else if (errorText.includes('username')) {
+            setError('このユーザー名はすでに使用されています。');
+          } else {
+            setError('入力内容に問題があります。');
+          }
+        } else {
+          setError('登録に失敗しました。サーバーエラーが発生しました。');
+        }
+        return;
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('登録に失敗しました。ネットワークエラーが発生しました。');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -20,6 +68,13 @@ export const RegisterForm = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             新規アカウント登録
           </h2>
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-800">
+              <strong>アカウント作成:</strong><br/>
+              ユーザー名、メールアドレス、パスワードを入力して<br/>
+              新しいアカウントを作成できます。
+            </p>
+          </div>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
@@ -71,7 +126,13 @@ export const RegisterForm = () => {
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm text-center">{error.message}</div>
+            <div className="text-red-500 text-sm text-center">{error}</div>
+          )}
+
+          {success && (
+            <div className="text-green-500 text-sm text-center">
+              登録が完了しました！ログインページに移動します...
+            </div>
           )}
 
           <div>
