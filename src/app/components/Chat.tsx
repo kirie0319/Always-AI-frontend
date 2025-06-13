@@ -18,8 +18,8 @@ export default function Chat() {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // APIベースURL
-  const API_BASE_URL = 'http://localhost:5001';
+  // API設定
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
 
   // スクロール
   const scrollToBottom = () => {

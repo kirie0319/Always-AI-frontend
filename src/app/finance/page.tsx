@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faChartLine,
+  faChartLine, 
   faDownload,
   faSpinner
 } from '@fortawesome/free-solid-svg-icons';
@@ -189,7 +189,7 @@ export default function FinanceProject() {
   };
 
   // APIベースURL設定
-  const API_BASE_URL = 'http://localhost:5001';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
   
   // APIリクエストヘルパー
   const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
