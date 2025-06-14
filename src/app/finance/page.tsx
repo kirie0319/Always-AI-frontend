@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faChartLine, 
@@ -83,6 +83,15 @@ interface PromptOption {
   content: string;
 }
 
+// チャットメッセージの型定義
+interface ChatMessage {
+  id: string;
+  user_message: string;
+  ai_response: string;
+  timestamp: string;
+  has_context: boolean;
+}
+
 export default function FinanceProject() {
   const [activeTab, setActiveTab] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
@@ -96,6 +105,12 @@ export default function FinanceProject() {
   const [promptOptions, setPromptOptions] = useState<PromptOption[]>([]);
   const [isLoadingPrompts, setIsLoadingPrompts] = useState(false);
   const [lifeplanData, setLifeplanData] = useState<LifeplanData | null>(null);
+
+  // チャット関連の状態
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [isLoadingChatHistory, setIsLoadingChatHistory] = useState(false);
 
   // プロンプト一覧を取得する関数
   const loadPromptOptions = async () => {
@@ -426,6 +441,70 @@ export default function FinanceProject() {
       setIsLoading(false);
     }
   };
+
+  // チャット履歴を取得する関数
+  const loadChatHistory = async () => {
+    setIsLoadingChatHistory(true);
+    try {
+      const response = await apiRequest('/financial/financial-chat-history');
+      if (response.success && response.history) {
+        setChatMessages(response.history);
+      }
+    } catch (error) {
+      console.error('チャット履歴取得エラー:', error);
+    } finally {
+      setIsLoadingChatHistory(false);
+    }
+  };
+
+  // チャットメッセージを送信する関数
+  const sendChatMessage = async () => {
+    if (!chatInput.trim()) return;
+
+    const userMessage = chatInput.trim();
+    setChatInput('');
+    setIsChatLoading(true);
+
+    try {
+      const response = await apiRequest('/financial/financial-chat', {
+        method: 'POST',
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      if (response.success && response.chat_response) {
+        // 新しいメッセージをチャット履歴に追加
+        const newMessage: ChatMessage = {
+          id: Date.now().toString(),
+          user_message: userMessage,
+          ai_response: response.chat_response,
+          timestamp: new Date().toISOString(),
+          has_context: response.has_context || false
+        };
+        
+        setChatMessages(prev => [...prev, newMessage]);
+      } else {
+        alert('メッセージの送信に失敗しました: ' + (response.message || ''));
+      }
+    } catch (error) {
+      console.error('チャット送信エラー:', error);
+      alert('メッセージの送信中にエラーが発生しました');
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  // チャット入力のEnterキー処理
+  const handleChatInputKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  };
+
+  // コンポーネントマウント時にチャット履歴を読み込み
+  useEffect(() => {
+    loadChatHistory();
+  }, []);
 
   return (
     <div className="w-full h-screen bg-[#f5faff] flex flex-col overflow-hidden">
@@ -1299,30 +1378,96 @@ export default function FinanceProject() {
         <div className="w-1/2 bg-white flex flex-col">
           {/* Chat Header - Fixed */}
           <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-            <h2 className="text-lg font-semibold text-gray-800">AI Chat Assistant</h2>
+            <h2 className="text-lg font-semibold text-gray-800">💬 財務AI アドバイザー</h2>
+            <p className="text-sm text-gray-600 mt-1">あなたの財務データに基づいてお答えします</p>
           </div>
 
           {/* Chat Messages - Scrollable */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="text-center text-gray-500 mt-10">
-              <div className="text-4xl mb-4">💬</div>
-              <p>AI アシスタントとチャットできます</p>
-              <p className="text-sm mt-2">財務情報について質問してください</p>
-            </div>
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {isLoadingChatHistory ? (
+              <div className="flex items-center justify-center py-8">
+                <FontAwesomeIcon icon={faSpinner} className="animate-spin text-2xl text-blue-500 mr-3" />
+                <span className="text-gray-600">チャット履歴を読み込み中...</span>
               </div>
+            ) : chatMessages.length === 0 ? (
+              <div className="text-center text-gray-500 mt-10">
+                <div className="text-4xl mb-4">💬</div>
+                <p className="text-lg font-medium mb-2">財務AIアドバイザーです</p>
+                <p className="text-sm">あなたの財務データについて何でもお聞きください</p>
+                <div className="mt-4 text-xs text-gray-400 bg-gray-50 p-3 rounded-lg">
+                  例: 投資戦略について教えて、老後資金はどのくらい必要ですか？
+                </div>
+              </div>
+            ) : (
+              chatMessages.map((msg) => (
+                <div key={msg.id} className="space-y-3">
+                  {/* ユーザーメッセージ */}
+                  <div className="flex justify-end">
+                    <div className="bg-blue-500 text-white rounded-lg px-4 py-2 max-w-[70%] shadow-sm">
+                      <p className="text-sm">{msg.user_message}</p>
+                    </div>
+                  </div>
+                  
+                  {/* AIレスポンス */}
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 text-gray-800 rounded-lg px-4 py-2 max-w-[70%] shadow-sm">
+                      <div className="flex items-center mb-2">
+                        <span className="text-xs font-medium text-blue-600">
+                          🤖 財務アドバイザー
+                        </span>
+                        {msg.has_context && (
+                          <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                            📊 データ連携済み
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm whitespace-pre-wrap">{msg.ai_response}</div>
+                      <div className="text-xs text-gray-500 mt-2">
+                        {new Date(msg.timestamp).toLocaleString('ja-JP')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+            
+            {/* 送信中の表示 */}
+            {isChatLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 text-gray-800 rounded-lg px-4 py-2 shadow-sm">
+                  <div className="flex items-center">
+                    <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2 text-blue-500" />
+                    <span className="text-sm">AIが回答を生成中...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Chat Input - Fixed */}
           <div className="px-6 py-4 border-t border-gray-200 flex-shrink-0">
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    placeholder="メッセージを入力..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    送信
-                  </button>
-                </div>
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={handleChatInputKeyPress}
+                placeholder="財務について質問してください..."
+                disabled={isChatLoading}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+              <button 
+                onClick={sendChatMessage}
+                disabled={isChatLoading || !chatInput.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isChatLoading ? (
+                  <FontAwesomeIcon icon={faSpinner} className="animate-spin" />
+                ) : (
+                  '送信'
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
