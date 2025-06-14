@@ -189,7 +189,7 @@ export default function FinanceProject() {
   };
 
   // APIベースURL設定
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
   
   // APIリクエストヘルパー
   const apiRequest = async (endpoint: string, options: RequestInit = {}) => {

@@ -28,7 +28,7 @@ export const RegisterForm = () => {
       formData.append('email', email);
       formData.append('password', password);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/register`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
         method: 'POST',
         body: formData,
       });

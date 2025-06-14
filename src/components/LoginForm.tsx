@@ -27,7 +27,7 @@ export const LoginForm = () => {
       formData.append('username', username);
       formData.append('password', password);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001'}/token`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/token`, {
         method: 'POST',
         body: formData,
       });
