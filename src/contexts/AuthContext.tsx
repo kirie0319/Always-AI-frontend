@@ -91,7 +91,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     try {
       // APIエンドポイントにトークンをテスト送信
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/conversation_history`, {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://finance-advisory-project-production.up.railway.app';
+      const response = await fetch(`${API_BASE_URL}/conversation_history`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

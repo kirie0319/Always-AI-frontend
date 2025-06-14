@@ -27,7 +27,8 @@ export const LoginForm = () => {
       formData.append('username', username);
       formData.append('password', password);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/token`, {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://finance-advisory-project-production.up.railway.app';
+      const response = await fetch(`${API_BASE_URL}/token`, {
         method: 'POST',
         body: formData,
       });

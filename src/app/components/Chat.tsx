@@ -19,7 +19,7 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // API設定
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://finance-advisory-project-production.up.railway.app';
 
   // スクロール
   const scrollToBottom = () => {
