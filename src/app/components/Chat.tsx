@@ -2,7 +2,7 @@
 // Chat component
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -26,17 +26,8 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // 初期化時にチャット履歴を読み込み
-  useEffect(() => {
-    loadChatHistory();
-  }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   // チャット履歴の読み込み
-  const loadChatHistory = async () => {
+  const loadChatHistory = useCallback(async () => {
     try {
       const token = localStorage.getItem('authToken');
       console.log('Loading chat history with token:', token ? `${token.substring(0, 20)}...` : 'なし');
@@ -69,7 +60,16 @@ export default function Chat() {
       console.error('チャット履歴の読み込みに失敗:', error);
       setError('チャット履歴の読み込みに失敗しました');
     }
-  };
+  }, [API_BASE_URL]);
+
+  // 初期化時にチャット履歴を読み込み
+  useEffect(() => {
+    loadChatHistory();
+  }, [loadChatHistory]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // メッセージ送信
   const sendMessage = async (messageContent: string) => {
