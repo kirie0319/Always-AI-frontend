@@ -5,7 +5,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faChartLine, 
   faDownload,
-  faSpinner
+  faSpinner,
+  faTrash
 } from '@fortawesome/free-solid-svg-icons';
 import { StrategyData, LifeplanData } from '@/types/finance';
 import StrategyDisplay from '@/components/StrategyDisplay';
@@ -498,6 +499,44 @@ export default function FinanceProject() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendChatMessage();
+    }
+  };
+
+  // 財務データをクリアする関数
+  const clearFinancialData = async () => {
+    // 確認ダイアログ
+    const isConfirmed = window.confirm(
+      '財務データをクリアしますか？\n\n以下のデータがすべて削除されます：\n・投資戦略データ\n・ライフプランデータ\n・チャット履歴\n\nこの操作は取り消せません。'
+    );
+    
+    if (!isConfirmed) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await apiRequest('/financial/clear-financial-data', {
+        method: 'POST',
+      });
+      
+      if (response.success) {
+        // フロントエンドの状態をリセット
+        setStrategy(null);
+        setLifeplanData(null);
+        setChatMessages([]);
+        setSelectedPrompt(null);
+        
+        // タブを最初に戻す
+        setActiveTab(0);
+        setCurrentStep(0);
+        
+        alert('財務データがクリアされました。');
+      } else {
+        alert('データのクリアに失敗しました: ' + (response.message || ''));
+      }
+    } catch (error) {
+      console.error('データクリアエラー:', error);
+      alert('データのクリア中にエラーが発生しました');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1378,8 +1417,21 @@ export default function FinanceProject() {
         <div className="w-1/2 bg-white flex flex-col">
           {/* Chat Header - Fixed */}
           <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-            <h2 className="text-lg font-semibold text-gray-800">💬 財務AI アドバイザー</h2>
-            <p className="text-sm text-gray-600 mt-1">あなたの財務データに基づいてお答えします</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800">💬 財務AI アドバイザー</h2>
+                <p className="text-sm text-gray-600 mt-1">あなたの財務データに基づいてお答えします</p>
+              </div>
+              <button
+                onClick={clearFinancialData}
+                disabled={isLoading}
+                className="px-3 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="財務データをクリア"
+              >
+                <FontAwesomeIcon icon={faTrash} className="text-sm" />
+                <span className="ml-2 text-xs">クリア</span>
+              </button>
+            </div>
           </div>
 
           {/* Chat Messages - Scrollable */}
